@@ -52,8 +52,10 @@ public class Server {
         Config config = gson.fromJson(reader, Config.class);
 	Spawn spawn = config.getSpawn();
 	
-	VelocityProxy.enable(config.getSecret());
-	instanceContainer.setChunkLoader(new AnvilLoader("worlds/lobby"));
+	if(config.getSecret() != null && !config.getSecret().trim().isEmpty()) {
+		VelocityProxy.enable(config.getSecret());
+	}
+	instanceContainer.setChunkLoader(new AnvilLoader(config.getWorld()));
 
         GlobalEventHandler globalEventHandler = MinecraftServer.getGlobalEventHandler();
         globalEventHandler.addListener(AsyncPlayerConfigurationEvent.class, event -> {
@@ -90,22 +92,31 @@ public class Server {
 		}
         });
 
-        MinecraftServer.LOGGER.info("Server starting...");
-        minecraftServer.start("0.0.0.0", 30063);
+        System.out.println("Server starting...");
+        minecraftServer.start("0.0.0.0", config.getPort());
     }
 }
 
 // Config class
 class Config {
+    private Integer port;
     private String secret;
+    private String world;
     private Spawn spawn;
     private Map<String, Portal> portals;
 
-    // Getters and Setters
+    public Integer getPort() {
+        return port;
+    }
+
     public String getSecret() {
         return secret;
     }
-
+    
+    public String getWorld() {
+        return world;
+    }
+    
     public Spawn getSpawn() {
         return spawn;
     }

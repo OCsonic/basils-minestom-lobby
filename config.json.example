@@ -1,5 +1,7 @@
 {
-  "secret": "SECRET_GOES_HERE",
+  "port": "25565",
+  "secret": "",
+  "world": "worlds/lobby",
   "spawn": { "x": "-20.5", "y": "65.0", "z": "0.5", "yaw": "-90.0", "roll": "0.0" },
   "portals": {
     "testing": { "x": "-12.0", "y": "66.0", "z": "8.0" },
