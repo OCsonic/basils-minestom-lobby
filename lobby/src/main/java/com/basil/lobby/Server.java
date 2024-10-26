@@ -32,11 +32,7 @@ import com.google.common.io.ByteStreams;
 
 // Portals
 import net.minestom.server.event.player.PlayerMoveEvent;
-import net.minestom.server.event.player.PlayerChatEvent;
-import net.minestom.server.event.player.PlayerBlockInteractEvent;
-import net.minestom.server.instance.block.BlockHandler;
-import net.minestom.server.utils.NamespaceID;
-import net.minestom.server.message.Messenger;
+import java.util.List;
 
 public class Server {
     public static void main(String[] args) 
@@ -47,20 +43,25 @@ public class Server {
         InstanceManager instanceManager = MinecraftServer.getInstanceManager();
         InstanceContainer instanceContainer = instanceManager.createInstanceContainer();
 
-	Gson gson = new GsonBuilder().setPrettyPrinting().create();
+	// Map config.json to the Config class in Config.java
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
         FileReader reader = new FileReader("config.json");
         Config configroot = gson.fromJson(reader, Config.class);
-	ServerConf config = configroot.getServerConf();
+        ServerConf config = configroot.getServerConf();
 
+	// Load the map file specified in config.json and prepare variables for spawn and portal coords
+	instanceContainer.setChunkLoader(new AnvilLoader(config.getWorld()));
+        Spawn spawn = config.getSpawn();
+	
+	// Attempt to load forwarding.secret
 	File vsecretfile = new File("forwarding.secret");
 	if(vsecretfile.exists() && !vsecretfile.isDirectory()) { 
 		String vsecret = new String(Files.readAllBytes(Path.of("forwarding.secret")));
 		if(vsecret != null && !vsecret.trim().isEmpty()) {
+			// If forwarding.secret exists then we enable velocity forwarding using that as the secret
 			VelocityProxy.enable(vsecret);
 		}
 	}
-	instanceContainer.setChunkLoader(new AnvilLoader(config.getWorld()));
-	Spawn spawn = config.getSpawn();
 
         GlobalEventHandler globalEventHandler = MinecraftServer.getGlobalEventHandler();
         globalEventHandler.addListener(AsyncPlayerConfigurationEvent.class, event -> {
@@ -68,156 +69,38 @@ public class Server {
             event.setSpawningInstance(instanceContainer);
             System.out.println(player.getUsername() + " joined the game");
             player.setRespawnPoint(new Pos(spawn.getX(), spawn.getY(), spawn.getZ(), spawn.getYaw(), spawn.getRoll()));
-	    //player.setGameMode(GameMode.ADVENTURE);
-	    player.setGameMode(GameMode.CREATIVE);
+	    player.setGameMode(GameMode.ADVENTURE);
 	
         });
-
+     
 	globalEventHandler.addListener(PlayerMoveEvent.class, event -> {
 	    final Player player = event.getPlayer();
+	    Pos position = player.getPosition();
 	    NetworkBuffer networkBuffer = new NetworkBuffer();
 	    
-	    // Send people to their target server
-	    //String connectTo = "creative"; // TODO make this determined automatically
-	    //System.out.println(player.getUsername() + " transferred to " + connectTo);
-	    //ByteArrayDataOutput out = ByteStreams.newDataOutput();
-	    //out.writeUTF("Connect");
-	    //out.writeUTF(connectTo);
-	    //player.sendPacket(new PluginMessagePacket("BungeeCord", out.toByteArray()));
+	    // Loop through entries under the config.json "portals" key
+            for (Map.Entry<String, Portal> entry : config.getPortals().entrySet()) {
+	        // For each entry we check if the player is standing in its portal
+                String currentPortal = entry.getKey();
+                Portal portal = entry.getValue();
+          
+                final double targetX = portal.getX();
+                final double targetY = portal.getY();
+                final double targetZ = portal.getZ();
 
-            //System.out.println(event.getNewPosition());
-            //Portal creativePortal = config.getPortals().get("creative");
-            //System.out.println(creativePortal.getX() + creativePortal.getY() + creativePortal.getZ());
+                if (position.x() >= targetX && position.x() <= targetX + 1.0 &&
+                    position.y() >= targetY && position.y() <= targetY + 0.9 &&
+                    position.z() >= targetZ && position.z() <= targetZ + 1.0) {
+                        System.out.println(player.getUsername() + " transferred to " + currentPortal);
+                        ByteArrayDataOutput out = ByteStreams.newDataOutput();
+                        out.writeUTF("Connect");
+                        out.writeUTF(currentPortal);
+                        player.sendPacket(new PluginMessagePacket("BungeeCord", out.toByteArray()));
+                }
+	    }
 	});
-	
-        globalEventHandler.addListener(PlayerBlockInteractEvent.class, event -> {
-		if (event.getHand() == Player.Hand.MAIN) {
-			var block = event.getBlock();
-			//event.getBlockPosition().withBlockX();
-		}
-        });
 
         System.out.println("Server starting...");
         minecraftServer.start("0.0.0.0", config.getPort());
     }
 }
-
-// Config root, nothing belongs up here other than the categories toolchain and server
-class Config {
-    private ServerConf server;
-    
-    public ServerConf getServerConf() {
-        return server;
-    }
-}
-
-// This is where all the actual server configs should be
-class ServerConf {
-    private Integer port;
-    private String world;
-    private Spawn spawn;
-    private Map<String, Portal> portals;
-
-    public Integer getPort() {
-        return port;
-    }
-
-    public String getWorld() {
-        return world;
-    }
-    
-    public Spawn getSpawn() {
-        return spawn;
-    }
-
-    public void setSpawn(Spawn spawn) {
-        this.spawn = spawn;
-    }
-
-    public Map<String, Portal> getPortals() {
-        return portals;
-    }
-
-    public void setPortals(Map<String, Portal> portals) {
-        this.portals = portals;
-    }
-}
-
-class Spawn {
-    private Double x;
-    private Double y;
-    private Double z;
-    private Float yaw;
-    private Float roll;
-
-    public Double getX() {
-        return x;
-    }
-
-    public void setX(Double x) {
-        this.x = x;
-    }
-
-    public Double getY() {
-        return y;
-    }
-
-    public void setY(Double y) {
-        this.y = y;
-    }
-
-    public Double getZ() {
-        return z;
-    }
-
-    public void setZ(Double z) {
-        this.z = z;
-    }
-
-    public Float getYaw() {
-        return yaw;
-    }
-
-    public void setYaw(Float yaw) {
-        this.yaw = yaw;
-    }
-
-    public Float getRoll() {
-        return roll;
-    }
-
-    public void setRoll(Float roll) {
-        this.roll = roll;
-    }
-}
-
-class Portal {
-    private Double x;
-    private Double y;
-    private Double z;
-
-    public Double getX() {
-        return x;
-    }
-
-    public void setX(Double x) {
-        this.x = x;
-    }
-
-    public Double getY() {
-        return y;
-    }
-
-    public void setY(Double y) {
-        this.y = y;
-    }
-
-    public Double getZ() {
-        return z;
-    }
-
-    public void setZ(Double z) {
-        this.z = z;
-    }
-}
-
