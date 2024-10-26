@@ -1,1 +1,4 @@
-$(jq -r '.toolchain.gradleBin' "$(dirname $0)/../config.json") $@
+configFile="$(dirname $0)/../config.json"
+export JAVA_HOME="$(jq -r '.toolchain.javaHome' "$configFile")"
+gradle="$(jq -r '.toolchain.gradleBin' "$configFile")"
+$gradle $@

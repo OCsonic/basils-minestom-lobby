@@ -1,2 +1,2 @@
-JavaVM="$(jq -r '.toolchain.javaVM' "$(dirname $0)/config.json")"
+JavaVM="$(jq -r '.toolchain.javaHome' "$(dirname $0)/config.json")/bin/java"
 echo "Launching server.jar..." && $JavaVM -jar server.jar

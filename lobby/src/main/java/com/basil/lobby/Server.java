@@ -56,7 +56,7 @@ public class Server {
 	if(vsecretfile.exists() && !vsecretfile.isDirectory()) { 
 		String vsecret = new String(Files.readAllBytes(Path.of("forwarding.secret")));
 		if(vsecret != null && !vsecret.trim().isEmpty()) {
-			VelocityProxy.enable(config.getSecret());
+			VelocityProxy.enable(vsecret);
 		}
 	}
 	instanceContainer.setChunkLoader(new AnvilLoader(config.getWorld()));
