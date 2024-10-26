@@ -49,8 +49,8 @@ public class Server {
 
 	Gson gson = new GsonBuilder().setPrettyPrinting().create();
         FileReader reader = new FileReader("config.json");
-        Config config = gson.fromJson(reader, Config.class);
-	Spawn spawn = config.getSpawn();
+        Config configroot = gson.fromJson(reader, Config.class);
+	ServerConf config = configroot.getServerConf();
 
 	File vsecretfile = new File("forwarding.secret");
 	if(vsecretfile.exists() && !vsecretfile.isDirectory()) { 
@@ -60,6 +60,7 @@ public class Server {
 		}
 	}
 	instanceContainer.setChunkLoader(new AnvilLoader(config.getWorld()));
+	Spawn spawn = config.getSpawn();
 
         GlobalEventHandler globalEventHandler = MinecraftServer.getGlobalEventHandler();
         globalEventHandler.addListener(AsyncPlayerConfigurationEvent.class, event -> {
@@ -101,10 +102,18 @@ public class Server {
     }
 }
 
-// Config class
+// Config root, nothing belongs up here other than the categories toolchain and server
 class Config {
+    private ServerConf server;
+    
+    public ServerConf getServerConf() {
+        return server;
+    }
+}
+
+// This is where all the actual server configs should be
+class ServerConf {
     private Integer port;
-    private String secret;
     private String world;
     private Spawn spawn;
     private Map<String, Portal> portals;
@@ -113,10 +122,6 @@ class Config {
         return port;
     }
 
-    public String getSecret() {
-        return secret;
-    }
-    
     public String getWorld() {
         return world;
     }
@@ -138,7 +143,6 @@ class Config {
     }
 }
 
-// Spawn class
 class Spawn {
     private Double x;
     private Double y;
@@ -187,7 +191,6 @@ class Spawn {
     }
 }
 
-// Portal class
 class Portal {
     private Double x;
     private Double y;
