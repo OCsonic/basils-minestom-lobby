@@ -13,6 +13,7 @@
       "skyblock_ob": { "x": "4.0", "y": "76.0", "z": "-8.0" },
       "creative": { "x": "9.0", "y": "66.0", "z": "8.0" },
       "survival": { "x": "9.0", "y": "66.0", "z": "-8.0" }
-    }
+    },
+    "operators": [ "Chiaki_Nanami_AI" ]
   }
 }

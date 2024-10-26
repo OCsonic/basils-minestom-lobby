@@ -14,6 +14,7 @@ dependencies {
     implementation("net.minestom:minestom-snapshots:0ca1dda2fe")
     implementation("com.google.code.gson:gson:+")
     implementation("com.google.guava:guava:+")
+    implementation("org.reflections:reflections:+")
 }
 
 java {
