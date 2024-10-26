@@ -1,5 +1,6 @@
 server.jar
 config.json
+forwarding.secret
 worlds
 lobby/.gradle
 lobby/build
