@@ -1,0 +1,1 @@
+$(jq -r '.toolchain.gradleBin' "$(dirname $0)/../config.json") $@

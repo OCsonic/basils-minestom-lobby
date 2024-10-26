@@ -1,4 +1,8 @@
 {
+  "toolchain": {
+    "gradleBin": "/usr/bin/gradle",
+    "javaVM": "/opt/openjdk-bin-21/bin/java"
+  },
   "port": "25565",
   "secret": "",
   "world": "worlds/lobby",

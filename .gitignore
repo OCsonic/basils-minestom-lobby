@@ -1,6 +1,5 @@
 server.jar
 config.json
-start
 worlds
 lobby/.gradle
 lobby/build

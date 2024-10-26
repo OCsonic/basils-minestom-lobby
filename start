@@ -1,2 +1,2 @@
-JavaVM="/usr/lib/jvm/java-21-graalvm/bin/java"
+JavaVM="$(jq -r '.toolchain.javaVM' "$(dirname $0)/config.json")"
 echo "Launching server.jar..." && $JavaVM -jar server.jar

@@ -3,4 +3,4 @@ ver="$(cat build.gradle.kts | grep "version = \"[0-9]*\.[0-9]*\.[0-9]*[a-z]\"" |
 serverJar="lobby-${ver}.jar"
 
 echo "Building Lobby version $ver"
-gradle build && mv "build/libs/$serverJar" ../server.jar
+./gradlew build && mv "build/libs/$serverJar" ../server.jar

@@ -51,9 +51,13 @@ public class Server {
         FileReader reader = new FileReader("config.json");
         Config config = gson.fromJson(reader, Config.class);
 	Spawn spawn = config.getSpawn();
-	
-	if(config.getSecret() != null && !config.getSecret().trim().isEmpty()) {
-		VelocityProxy.enable(config.getSecret());
+
+	File vsecretfile = new File("forwarding.secret");
+	if(vsecretfile.exists() && !vsecretfile.isDirectory()) { 
+		String vsecret = new String(Files.readAllBytes(Path.of("forwarding.secret")));
+		if(vsecret != null && !vsecret.trim().isEmpty()) {
+			VelocityProxy.enable(config.getSecret());
+		}
 	}
 	instanceContainer.setChunkLoader(new AnvilLoader(config.getWorld()));
 
