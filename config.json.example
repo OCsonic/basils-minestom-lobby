@@ -14,7 +14,9 @@
       "creative": { "x": "9.0", "y": "66.0", "z": "8.0" },
       "survival": { "x": "9.0", "y": "66.0", "z": "-8.0" }
     },
-    "combat": { "h": "10.0", "y": "10.0" },
+    "combat": {
+       "knockback": { "h": "7.0", "y": "5.0" }
+    },
     "operators": [ "Chiaki_Nanami_AI" ]
   }
 }
