@@ -42,6 +42,11 @@ import net.minestom.server.instance.*;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.instance.anvil.AnvilLoader;
 
+// Combat
+import net.minestom.server.event.entity.EntityAttackEvent;
+import net.minestom.server.entity.Entity;
+import net.minestom.server.coordinate.Vec;
+
 public class Server {
 	public static void main(String[] args) 
 		 throws IOException
@@ -129,6 +134,29 @@ public class Server {
 				event.setNewPosition(new Pos(spawn.getX(), spawn.getY(), spawn.getZ(), spawn.getYaw(), spawn.getRoll()));
 			}
 		});
+		
+		globalEventHandler.addListener(EntityAttackEvent.class, event -> {
+			Entity attacker = event.getEntity();
+			Entity target = event.getTarget();
+
+			if (attacker instanceof Player && target != null) {
+				Pos attackerPosition = attacker.getPosition();
+				Pos targetPosition = target.getPosition();	
+				double knockbackStrength = 1.0;
+
+				double deltaX = targetPosition.x() - attackerPosition.x();
+				double deltaZ = targetPosition.z() - attackerPosition.z();
+				
+				double length = Math.sqrt(deltaX * deltaX + deltaZ * deltaZ);
+				if (length > 0) {
+					double knockbackX = (deltaX / length) * knockbackStrength;
+					double knockbackZ = (deltaZ / length) * knockbackStrength;
+					
+					target.setVelocity(new Vec(knockbackX, 0.5, knockbackZ));
+				}
+			}
+		});
+		
 		System.out.println("Server starting...");
 		CommandManager commandManager = MinecraftServer.getCommandManager();
 		minecraftServer.start("0.0.0.0", config.getPort());
