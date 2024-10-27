@@ -15,6 +15,7 @@ class ServerConf {
 	private Integer port;
 	private String world;
 	private Spawn spawn;
+	private Combat combat;
 	private Map<String, Portal> portals;
 	private List<String> operators;
 
@@ -32,6 +33,10 @@ class ServerConf {
 
 	public void setSpawn(Spawn spawn) {
 		this.spawn = spawn;
+	}
+	
+	public Combat getCombat() {
+		return combat;
 	}
 
 	public Map<String, Portal> getPortals() {
@@ -92,6 +97,27 @@ class Spawn {
 
 	public void setRoll(Float roll) {
 		this.roll = roll;
+	}
+}
+
+class Combat {
+	private Knockback knockback;
+	
+	public Knockback getKnockback() {
+		return knockback;
+	}
+}
+
+class Knockback {
+	private Double h;
+	private Double y;
+
+	public Double getH() {
+		return h;
+	}
+
+	public Double getY() {
+		return y;
 	}
 }
 

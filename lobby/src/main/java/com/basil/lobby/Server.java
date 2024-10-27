@@ -66,7 +66,8 @@ public class Server {
 		instanceContainer.setChunkLoader(new AnvilLoader("worlds/lobby"));
 		//instanceContainer.setChunkLoader(new AnvilLoader(config.getWorld()));
 		Spawn spawn = config.getSpawn();
-
+		Combat combat = config.getCombat();
+		Knockback pvp = combat.getKnockback();
 		// Attempt to load forwarding.secret
 		File vsecretfile = new File("forwarding.secret");
 		if(vsecretfile.exists() && !vsecretfile.isDirectory()) { 
@@ -142,7 +143,7 @@ public class Server {
 			if (attacker instanceof Player && target != null) {
 				Pos attackerPosition = attacker.getPosition();
 				Pos targetPosition = target.getPosition();	
-				double knockbackStrength = 1.0;
+				double knockbackStrength = pvp.getH();
 
 				double deltaX = targetPosition.x() - attackerPosition.x();
 				double deltaZ = targetPosition.z() - attackerPosition.z();
@@ -152,7 +153,7 @@ public class Server {
 					double knockbackX = (deltaX / length) * knockbackStrength;
 					double knockbackZ = (deltaZ / length) * knockbackStrength;
 					
-					target.setVelocity(new Vec(knockbackX, 0.5, knockbackZ));
+					target.setVelocity(new Vec(knockbackX, pvp.getY(), knockbackZ));
 				}
 			}
 		});
