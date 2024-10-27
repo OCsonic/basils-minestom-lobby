@@ -2,6 +2,7 @@ package com.basil.lobby;
 
 import net.minestom.server.MinecraftServer;
 import commands.CmdCore;
+import console.Console;
 
 // Config
 import java.io.*;
@@ -12,6 +13,19 @@ import java.util.Map;
 import java.util.List;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+
+// Server Console
+import net.minestom.server.command.CommandManager;
+import net.minestom.server.command.ConsoleSender;
+
+// Velocity
+import net.minestom.server.extras.velocity.VelocityProxy;
+import net.minestom.server.network.NetworkBuffer;
+import net.minestom.server.network.packet.server.common.PluginMessagePacket;
+import com.google.common.io.ByteArrayDataOutput;
+import com.google.common.io.ByteStreams;
+// Velocity Server Portals
+import net.minestom.server.event.player.PlayerMoveEvent;
 
 // Players
 import net.minestom.server.entity.Player;
@@ -25,16 +39,6 @@ import net.minestom.server.permission.Permission;
 import net.minestom.server.instance.*;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.instance.anvil.AnvilLoader;
-
-// Velocity
-import net.minestom.server.extras.velocity.VelocityProxy;
-import net.minestom.server.network.NetworkBuffer;
-import net.minestom.server.network.packet.server.common.PluginMessagePacket;
-import com.google.common.io.ByteArrayDataOutput;
-import com.google.common.io.ByteStreams;
-
-// Portals
-import net.minestom.server.event.player.PlayerMoveEvent;
 
 public class Server {
 	public static void main(String[] args) 
@@ -117,6 +121,8 @@ public class Server {
 			}
 		});
 		System.out.println("Server starting...");
+		CommandManager commandManager = MinecraftServer.getCommandManager();
 		minecraftServer.start("0.0.0.0", config.getPort());
+		new Console(commandManager).start();
 	}
 }

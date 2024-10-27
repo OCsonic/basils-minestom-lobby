@@ -5,15 +5,16 @@ import net.minestom.server.MinecraftServer;
 import net.minestom.server.command.builder.Command;
 import net.minestom.server.command.CommandManager;
 import net.minestom.server.command.ServerSender;
+import net.minestom.server.command.ConsoleSender;
 
 public class CommandStop extends Command {
 	public CommandStop() {
 		// Command info
 		super("stop");
 
-		// Require OP status
+		// Require to be run as Console or with OP status
 		setCondition((sender, commandString) -> (sender instanceof ServerSender)
-				|| sender.hasPermission(CmdCore.OPERATOR));
+			|| sender.hasPermission(CmdCore.OPERATOR) || (sender instanceof ConsoleSender));
 
 		// Functionality
 		setDefaultExecutor((sender, context) -> {
