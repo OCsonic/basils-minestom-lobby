@@ -6,5 +6,4 @@ Dependencies:
 
 This project will be public after the following:
 
-	cooldown in server transfer routine to stop console spam
 	combat (without damage)

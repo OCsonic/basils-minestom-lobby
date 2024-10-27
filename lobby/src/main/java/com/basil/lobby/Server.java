@@ -11,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.List;
+import java.util.HashMap;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -26,6 +27,7 @@ import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 // Velocity Server Portals
 import net.minestom.server.event.player.PlayerMoveEvent;
+import net.minestom.server.thread.TickThread;
 
 // Players
 import net.minestom.server.entity.Player;
@@ -88,13 +90,15 @@ public class Server {
 			}
 				
 		});
-
+		
+		final Map<Player, Long> lastPortalSendTime = new HashMap<>();
 		globalEventHandler.addListener(PlayerMoveEvent.class, event -> {
 			final Player player = event.getPlayer();
 			Pos position = player.getPosition();
 			NetworkBuffer networkBuffer = new NetworkBuffer();
 
 			// Loop through entries under the config.json "portals" key
+			long currentTime = System.currentTimeMillis();
 			for (Map.Entry<String, Portal> entry : config.getPortals().entrySet()) {
 				// For each entry we check if the player is standing in its portal
 				String currentPortal = entry.getKey();
@@ -107,12 +111,17 @@ public class Server {
 				if (position.x() >= targetX && position.x() <= targetX + 1.0 &&
 				    position.y() >= targetY && position.y() <= targetY + 0.9 &&
 				    position.z() >= targetZ && position.z() <= targetZ + 1.0) {
-					// If player is standing in portal we send them to the server with a name matching the portal entry
-					System.out.println(player.getUsername() + " transferred to " + currentPortal);
-					ByteArrayDataOutput out = ByteStreams.newDataOutput();
-					out.writeUTF("Connect");
-					out.writeUTF(currentPortal);
-					player.sendPacket(new PluginMessagePacket("BungeeCord", out.toByteArray()));
+					if (!lastPortalSendTime.containsKey(player) || (currentTime - lastPortalSendTime.get(player) >= 5000)) {
+						// If player is standing in portal we send them to the server with a name matching the portal entry
+						System.out.println(player.getUsername() + " transferred to " + currentPortal);
+						ByteArrayDataOutput out = ByteStreams.newDataOutput();
+						out.writeUTF("Connect");
+						out.writeUTF(currentPortal);
+						player.sendPacket(new PluginMessagePacket("BungeeCord", out.toByteArray()));
+	
+						// Record last tick that a player attempted to transfer servers on
+						lastPortalSendTime.put(player, currentTime);
+					}
 				}
 			}
 			if (position.y() <= spawn.getY() - 10) {
