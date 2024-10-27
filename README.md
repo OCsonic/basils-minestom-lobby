@@ -1,4 +1,4 @@
-#Basil's Simple Minestom Lobby
+# Basil's Simple Minestom Lobby
 ## Functionality
 - Everything is configured in Json
 - Spawn and Bungee portals are configurable
