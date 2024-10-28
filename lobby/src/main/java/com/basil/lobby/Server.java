@@ -44,8 +44,12 @@ import net.minestom.server.instance.anvil.AnvilLoader;
 
 // Combat
 import net.minestom.server.event.entity.EntityAttackEvent;
+import net.minestom.server.event.player.PlayerEntityInteractEvent;
 import net.minestom.server.entity.Entity;
 import net.minestom.server.coordinate.Vec;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class Server {
 	public static void main(String[] args) 
@@ -157,10 +161,55 @@ public class Server {
 				}
 			}
 		});
-		
+
+		Map<Player, Entity> controllerEntities = new HashMap<>();
+		Map<Entity, Player> controlledEntities = new HashMap<>();
+		ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);
+		globalEventHandler.addListener(PlayerEntityInteractEvent.class, event -> {
+			Player player = event.getPlayer();
+			Entity entity = event.getTarget();
+	
+			if (event.getHand() == Player.Hand.MAIN) {
+				if (!controllerEntities.containsKey(player)) {
+					if (controlledEntities.containsKey(player)) {
+						return;
+					}
+					controllerEntities.put(player, entity);
+					controlledEntities.put(entity, player);
+					grabEntity(player, entity, controllerEntities, executorService);
+					System.out.println(player.getUsername() + " attempted to grab player");
+				} else {
+					controllerEntities.remove(player);
+					controlledEntities.remove(entity);
+					System.out.println(player.getUsername() + " attempted to drop player");
+				}
+			}
+		});
+
 		System.out.println("Server starting...");
-		CommandManager commandManager = MinecraftServer.getCommandManager();
 		minecraftServer.start("0.0.0.0", config.getPort());
+		CommandManager commandManager = MinecraftServer.getCommandManager();
 		new Console(commandManager).start();
 	}
+
+	private static void grabEntity(Player player, Entity entity, Map<Player, Entity> controllerEntities, ScheduledExecutorService executorService) {
+		executorService.scheduleAtFixedRate(() -> {
+			if (controllerEntities.containsKey(player)) {
+				Pos position = player.getPosition();
+				float yaw = position.yaw();
+				float pitch = position.pitch();
+
+				double dx = -Math.sin(Math.toRadians(yaw)) * Math.cos(Math.toRadians(pitch));
+				double dy = -Math.sin(Math.toRadians(pitch));
+				double dz = Math.cos(Math.toRadians(yaw)) * Math.cos(Math.toRadians(pitch));
+			
+				double scale = 2;
+				Vec direction = new Vec(dx * scale, dy * scale, dz * scale);
+				Pos moveTo = player.getPosition().add(direction);
+
+				entity.teleport(moveTo);
+			}
+		}, 0, 100, TimeUnit.MILLISECONDS);
+	}
+		
 }
